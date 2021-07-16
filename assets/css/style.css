@@ -1,0 +1,19 @@
+html{
+    /* set font-size (1rem) to 10px to make it easier to calculate font sizes */
+    font-size: 62.5%;
+}
+
+body {
+    font-family:'Times New Roman', Times, serif;
+    position:relative;
+    margin:auto;
+    text-align:center;
+    font-size: 1.75rem;
+}
+
+/* class added to hide a header for text readers to read. Code copied from MDN. */
+.hidden {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
