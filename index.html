@@ -10,16 +10,31 @@
 
   <body>
       <header>
-        <h1>Quiz</h1>
+        <!-- center this header -->
+        <h1>Coding Quiz Challenge</h1>
+        <nav>
+          <!-- navigation bar that has the High Scores button on the left, Timer on the right -->
+          <button id="highScores">High Scores</button>
+          <h3 id="countTimer">Time Remaining: 60</h3>
+        </nav>
       </header>
 
       <main>
-        
+        <!-- central text box that displays the question -->
+        <article id="questionBox">
+          Try to answer the questions in the allotted time. Each wrong answer will deduct 10 seconds from the timer.
+        </article>
+        <!-- the start button, which will disappear once pressed, start the timer, and replace the questionBox with the question -->
+        <form id="answerBox">
+          <ol id="answerChoices"></ol>
+          <button id="startButton">START</button>
+        </form>
       </main>
 
       <footer>
           Lorem Ipsum Co. 2021
       </footer>
+      <script src="./assets/js/script.js"></script>
   </body>
 
 </html>

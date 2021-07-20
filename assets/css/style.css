@@ -17,3 +17,17 @@ body {
     top: -9999px;
     left: -9999px;
 }
+
+/* id for the High Scores to put it on the left */
+#highScores {
+    float: left;
+}
+
+/* id for the timer to put it on the right */
+#countTimer {
+    float: right;
+}
+
+#questionBox {
+    font-size: large;
+}
