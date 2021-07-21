@@ -11,7 +11,7 @@
   <body>
       <header>
         <!-- center this header -->
-        <h1>Coding Quiz Challenge</h1>
+        <h1 id="banner">Coding Quiz Challenge</h1>
         <nav>
           <!-- navigation bar that has the High Scores button on the left, Timer on the right -->
           <button id="highScores">High Scores</button>
@@ -27,8 +27,10 @@
         <!-- the start button, which will disappear once pressed, start the timer, and replace the questionBox with the question -->
         <form id="answerBox">
           <ol id="answerChoices"></ol>
-          <button id="startButton">START</button>
+
+          <button type="submit" id="submitName" style="display: none"></button>
         </form>
+        <button id="startButton">START</button>
       </main>
 
       <footer>

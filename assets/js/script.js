@@ -7,11 +7,22 @@ var startBtn = document.querySelector("#startButton");
 var highScoreBtn = document.querySelector("#highScores");
 var countDownDisplay = document.querySelector("#countTimer"); 
 var questionBoxText = document.querySelector("#questionBox");
+var answerList = document.querySelector("#answerChoices");
 // this is the countdown timer, globally held so that it can be accessed by all functions
 var countDownTime = 60;
 // define a global variable to hold the timer once it is started
 var countDownTimer;
 var selectedAnswer;
+// create an array that will be filled with the indexes of possible questions in the questions array
+var possibleQuestions = [];
+var chooseQuestion = 0;
+var userEntry = {
+    userName = " ",
+    userScore = 0,
+};
+var userHighScores = [];
+var bannerEl = document.querySelector("#banner");
+var submitBtn = document.querySelector("#submitName");
 
 /* put questions into an array of objects, have a global variable for keeping track of which question we're on, and which questions have been used
    each object has titles(string), choices(array of strings), answers(string)
@@ -75,7 +86,7 @@ var questions = [
     {
         "title": "How do you declare a JavaScript variable?",
         "choices": ["var carName;", "v carName;", "variable carName;", "str carName;"],
-        "answer": "Math.round(7.25)",
+        "answer": "var carName;",
     },
     {
         "title": "Which operator assigns a value to a JavaScript variable?",
@@ -85,75 +96,93 @@ var questions = [
 ];
 
 function init() {
-    countDownTime = 10;
+    countDownTime = 60;
     countDownDisplay.textContent = countDownTime;
+    questionCount = 0;
+    // re-initialize the possibleQuestions array
+    possibleQuestions = [];
+    for (var i=0; i<questions.length; i++) {
+        possibleQuestions[i] = i;
+    };
 }
 
 function myTimer() {
     countDownTime--;
     countDownDisplay.innerHTML = countDownTime;
     if (countDownTime <= 0) {
-        console.log(countDownTimer);
-        clearInterval(countDownTimer);
+        //clearQuestion();
         quizOver();
-        return;
     };
 }
 
-/* this function returns a random integer, to be used to select a question
-    inspired from the example at codegrepper.com, written by Disturbed Duck */
-function randomInteger(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+// this function returns a random integer, to be used to select a question
+function randomInteger(max) {
+    return Math.floor(Math.random() * max);
 }
 
-function selectAnswer(userAnswer) {
-    selectedAnswer = userAnswer;
+function checkAnswer(userAnswer, actualAnswer) {
+    if (userAnswer == actualAnswer){
+        // let the user know they were right
+        console.log("correct");
+    } else {
+        console.log("incorrect");
+        countDownTime-=10;
+    };
+
+    questionCount++;
+
+    if (questionCount == 6){
+        quizOver();
+    } else {
+        clearQuestion();
+        drawQuestion();
+    };
+
+}
+
+// function to populate the question and answer boxes
+function drawQuestion() {
+    var ranInt = randomInteger(possibleQuestions.length);
+    chooseQuestion = possibleQuestions[ranInt];
+    var docFrag = document.createDocumentFragment();
+    //set up the question
+    questionBoxText.textContent = questions[chooseQuestion].title;
+    /*set up the potential answers as buttons in a list and append them to the answerBox
+      add an eventListener to each button that calls the checkAnswer function on click 
+      instead of creating and appending dynamically, create HTML for each answer button, use display: none to hide them, 
+      then populate and reveal them after every question*/
+    for (let x in questions[chooseQuestion].choices){
+        // console.log(questions[chooseQuestion].choices[x]);
+        var choiceButton = document.createElement("button");
+        choiceButton.textContent = questions[chooseQuestion].choices[x];
+        //choiceButton.addEventListener("click", function(){ checkAnswer(questions[chooseQuestion].choices[x], questions[chooseQuestion].answer); });
+        docFrag.appendChild(choiceButton);
+    }
+    // append the list of potential answer buttons to the choice area
+    answerList.appendChild(docFrag);
+    possibleQuestions.splice(ranInt, 1);
+}
+
+// this clears out the list of possible answers in preparation for the next set
+function clearQuestion() {
+    while(answerList.firstChild){
+        answerList.removeChild(answerList.firstChild);
+    };
 }
 
 function quizStart(event) {
-    event.preventDefault();
     init();
-    console.log(questionCount);
     // hides the start button
     startBtn.style.display = "none";
     // this is the timer variable
     countDownTimer = setInterval(myTimer, 1000);
-    // create an array that is filled with the indexes of possible questions in the questions array
-    var possibleQuestions = [];
-    for (var i=0; i<questions.length; i++) {
-        possibleQuestions[i] = i;
-    };
+    
     //console.log(possibleQuestions);
     //console.log(questions);
-    do{
-        var chooseQuestion = randomInteger(0, possibleQuestions.length);
-        var docFrag = document.createDocumentFragment();
-        //set up the question
-        questionBoxText.textContent = questions[chooseQuestion].title;
-        //set up the potential answers as buttons in a list and append them to the answerBox
-        for (let x in questions[chooseQuestion].choices){
-            console.log(questions[chooseQuestion].choices[x]);
-            var choiceButton = document.createElement("button");
-            choiceButton.innerHTML = questions[chooseQuestion].choices[x];
-            choiceButton.addEventListener("click", function(){ selectAnswer(questions[chooseQuestion].choices[x]); });
-            docFrag.appendChild(choiceButton);
-        }
-        // append the list of potential answer buttons to the choice area
-        document.getElementById("answerChoices").appendChild(docFrag);
-        //wait for the answer to be clicked
 
-        //evaluate the answer
-        if (selectedAnswer === questions[chooseQuestion].answer){
-            questionCount++;
-            // put out a quick message that the answer was correct
-        } else {
-            questionCount++;
-            // put out a quick message that the answer was wrong
-        }
-        // increment the questionCount
-        //questionCount++;
-    } 
-    while (countDownTime < 0 && questionCount < 6);
+    drawQuestion();
+
+    // while (countDownTime < 0 && questionCount < 6);
     // or instead of a do while loop, put the for loops to choose question and populate answers into a different function
     // make the buttons have a function that evaluates the answer and increment questionCount on click
     // after evaluate the answer then evaluate if the questionCount means another question should be prepared or not
@@ -161,11 +190,60 @@ function quizStart(event) {
 
 function quizOver() {
     startBtn.style.display = "";
+    clearQuestion();
+    clearInterval(countDownTimer);
     console.log("quizOver function called");
+    console.log(countDownTime);
+    questionBoxText.textContent = "The Quiz Is Over! Please enter your name";
+    showHighSubmit();
+}
+
+function showHighScore() {
+    // show the high scores
+    // convert the answerBox into the high Score form
+    getHighScores();
+    bannerEl.textContent = "HIGH SCORES";
+    if (userHighScores !== null) {
+        for (let i = 0;i < userHighScores.length; i++){
+            let userScorePair = userHighScores[i];
+            let li = document.createElement("li");
+            li.textContent = userScorePair.userName + "   " + userScorePair.userScore;
+            answerList.appendChild(li);
+        }
+        // go back button
+        // clear score button
+    }
+}
+
+function getHighScores() {
+    var storedHighScores = JSON.parse(localStorage.getItem("highScores"));
+    if (storedHighScores !== null) {
+        userHighScores = storedHighScores;
+    }
+}
+
+function showHighSubmit() {
+    // after the quiz ends, enter the score and initials
+    submitBtn.style.display = "";
+
+}
+
+function storeHighScores() {
+    localStorage.setItem("highScores", JSON.stringify(userHighScores));
+}
+
+function submitHighScore() {
+    
 }
 
 startBtn.addEventListener("click", quizStart);
-
-init();
-
+highScoreBtn.addEventListener("click", showHighScore);
+answerList.addEventListener("click", function(event){
+    event.preventDefault();
+    var element = event.target;
+    if (element.matches("button") === true) {
+        checkAnswer(element.textContent, questions[chooseQuestion].answer);
+      }
+});
+submitBtn.on("submit", submitHighScore);
 

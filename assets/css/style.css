@@ -31,3 +31,7 @@ body {
 #questionBox {
     font-size: large;
 }
+
+button {
+    margin: 5px;
+}
