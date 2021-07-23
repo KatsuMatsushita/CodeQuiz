@@ -27,10 +27,12 @@
         <!-- the start button, which will disappear once pressed, start the timer, and replace the questionBox with the question -->
         <form id="answerBox">
           <ol id="answerChoices"></ol>
-
-          <button type="submit" id="submitName" style="display: none"></button>
+          <input type="text" style="display: none" id="submitInit" placeholder="Enter your initials">
+          <button type="submit" id="submitName" style="display: none">Submit</button>
         </form>
+        <button id="goBack" style="display: none">Go Back</button>
         <button id="startButton">START</button>
+        <button id="clearScores" style="display: none">Clear Scores</button>
       </main>
 
       <footer>

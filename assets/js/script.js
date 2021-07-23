@@ -17,12 +17,15 @@ var selectedAnswer;
 var possibleQuestions = [];
 var chooseQuestion = 0;
 var userEntry = {
-    userName = " ",
-    userScore = 0,
+    userName: " ",
+    userScore: 0,
 };
 var userHighScores = [];
 var bannerEl = document.querySelector("#banner");
 var submitBtn = document.querySelector("#submitName");
+var submitBox = document.querySelector("#submitInit");
+var goBackBtn = document.querySelector("#goBack");
+var clearScoreBtn = document.querySelector("#clearScores");
 
 /* put questions into an array of objects, have a global variable for keeping track of which question we're on, and which questions have been used
    each object has titles(string), choices(array of strings), answers(string)
@@ -148,22 +151,21 @@ function drawQuestion() {
     //set up the question
     questionBoxText.textContent = questions[chooseQuestion].title;
     /*set up the potential answers as buttons in a list and append them to the answerBox
-      add an eventListener to each button that calls the checkAnswer function on click 
-      instead of creating and appending dynamically, create HTML for each answer button, use display: none to hide them, 
-      then populate and reveal them after every question*/
+      add an eventListener to each button that calls the checkAnswer function on click */
     for (let x in questions[chooseQuestion].choices){
-        // console.log(questions[chooseQuestion].choices[x]);
+        // create a button, make its text into a question, then append it to the docFrag
         var choiceButton = document.createElement("button");
         choiceButton.textContent = questions[chooseQuestion].choices[x];
-        //choiceButton.addEventListener("click", function(){ checkAnswer(questions[chooseQuestion].choices[x], questions[chooseQuestion].answer); });
         docFrag.appendChild(choiceButton);
     }
     // append the list of potential answer buttons to the choice area
     answerList.appendChild(docFrag);
+    // this removes the question from the array of possible questions
     possibleQuestions.splice(ranInt, 1);
 }
 
 // this clears out the list of possible answers in preparation for the next set
+// this also is used to show the high scores
 function clearQuestion() {
     while(answerList.firstChild){
         answerList.removeChild(answerList.firstChild);
@@ -176,24 +178,14 @@ function quizStart(event) {
     startBtn.style.display = "none";
     // this is the timer variable
     countDownTimer = setInterval(myTimer, 1000);
-    
-    //console.log(possibleQuestions);
-    //console.log(questions);
 
+    // displays the first question
     drawQuestion();
-
-    // while (countDownTime < 0 && questionCount < 6);
-    // or instead of a do while loop, put the for loops to choose question and populate answers into a different function
-    // make the buttons have a function that evaluates the answer and increment questionCount on click
-    // after evaluate the answer then evaluate if the questionCount means another question should be prepared or not
 }
 
 function quizOver() {
-    startBtn.style.display = "";
     clearQuestion();
     clearInterval(countDownTimer);
-    console.log("quizOver function called");
-    console.log(countDownTime);
     questionBoxText.textContent = "The Quiz Is Over! Please enter your name";
     showHighSubmit();
 }
@@ -202,7 +194,13 @@ function showHighScore() {
     // show the high scores
     // convert the answerBox into the high Score form
     getHighScores();
+    // hide the start button
+    startBtn.style.display = "none";
     bannerEl.textContent = "HIGH SCORES";
+    // go back button becomes visible
+    goBackBtn.style.display = "";
+    // clear score button becomes visible
+    clearScoreBtn.style.display = "";
     if (userHighScores !== null) {
         for (let i = 0;i < userHighScores.length; i++){
             let userScorePair = userHighScores[i];
@@ -210,9 +208,8 @@ function showHighScore() {
             li.textContent = userScorePair.userName + "   " + userScorePair.userScore;
             answerList.appendChild(li);
         }
-        // go back button
-        // clear score button
     }
+
 }
 
 function getHighScores() {
@@ -225,15 +222,50 @@ function getHighScores() {
 function showHighSubmit() {
     // after the quiz ends, enter the score and initials
     submitBtn.style.display = "";
+    submitBox.style.display = "";
+}
 
+function hideHighSubmit() {
+    // this hides the submit box and button after the user clicks the submit button
+    submitBtn.style.display = "none";
+    submitBox.style.display = "none";
 }
 
 function storeHighScores() {
+    // this stores the userHighScores object
     localStorage.setItem("highScores", JSON.stringify(userHighScores));
 }
 
-function submitHighScore() {
-    
+function submitHighScore(event) {
+    event.preventDefault();
+    //this gets the userInitials from the text box and checks that it's not empty
+    var userInitials = submitBox.value.trim();
+    if (userInitials !== ""){
+        getHighScores();
+        userEntry.userName = userInitials;
+        userEntry.userScore = countDownTime;
+        userHighScores.push(userEntry)
+        submitBox.value = "";
+        storeHighScores();
+        showHighScore();
+        hideHighSubmit();
+    } else {
+        questionBoxText.textContent = "Please enter your initials"
+    };
+}
+
+function goBackStart(){
+    clearScoreBtn.style.display = "none";
+    goBackBtn.style.display = "none";
+    startBtn.style.display = "";
+    clearQuestion();
+    questionBoxText.textContent = "Try to answer the questions in the allotted time. Each wrong answer will deduct 10 seconds from the timer.";
+    bannerEl.textContent = "Coding Quiz Challenge";
+}
+
+function clearScore() {
+    clearQuestion();
+    localStorage.clear();
 }
 
 startBtn.addEventListener("click", quizStart);
@@ -243,7 +275,9 @@ answerList.addEventListener("click", function(event){
     var element = event.target;
     if (element.matches("button") === true) {
         checkAnswer(element.textContent, questions[chooseQuestion].answer);
-      }
+        }
 });
-submitBtn.on("submit", submitHighScore);
 
+submitBtn.addEventListener("click", submitHighScore);
+clearScoreBtn.addEventListener("click", clearScore);
+goBackBtn.addEventListener("click", goBackStart);
